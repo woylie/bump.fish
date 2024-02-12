@@ -35,20 +35,41 @@ function bump
         set -l changelog $argv[1]
         set -l new_version $argv[2]
         set -l today (date -u +'%Y-%m-%d')
-        sed "s/## Unreleased/## Unreleased\n\n## [$new_version] - $today/g" $changelog >tmp && mv tmp $changelog
+        set tmpfile (mktemp)
+
+        if sed "s/## Unreleased/## Unreleased\n\n## [$new_version] - $today/g" "$changelog" > "$tmpfile"
+            mv "$tmpfile" "$changelog"
+        else
+            echo "Failed to update changelog."
+            rm "$tmpfile"
+        end
     end
 
     function update_mix_file
         set -l mix_file $argv[1]
         set -l new_version $argv[2]
-        sed "s/@version \".*\"/@version \"$new_version\"/g" $mix_file >tmp && mv tmp $mix_file
+        set tmpfile (mktemp)
+
+        if sed "s/@version \".*\"/@version \"$new_version\"/g" "$mix_file" > "$tmpfile"
+            mv "$tmpfile" "$mix_file"
+        else
+            echo "Failed to update mix file."
+            rm "$tmpfile"
+        end
     end
 
     function update_readme
         set -l readme $argv[1]
         set -l app $argv[2]
         set -l new_version $argv[3]
-        sed "s/{:$app, \"~> [0-9]*\.[0-9]*\.[0-9]*\"}/{:$app, \"~> $new_version\"}/g" $readme >tmp && mv tmp $readme
+        set tmpfile (mktemp)
+
+        if sed "s/{:$app, \"~> [0-9]*\.[0-9]*\.[0-9]*\"}/{:$app, \"~> $new_version\"}/g" "$readme" > "$tmpfile"
+            mv "$tmpfile" "$readme"
+        else
+            echo "Failed to update readme."
+            rm "$tmpfile"
+        end
     end
 
     set -l valid_args major minor patch
